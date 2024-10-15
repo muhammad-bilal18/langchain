@@ -12,8 +12,8 @@ import { Document } from "@langchain/core/documents";
 import "pdf-parse";
 import "mammoth";
 
-const CHUNK_SIZE = 300;
-const CHUNK_OVERLAP = 30;
+const CHUNK_SIZE = 2000;
+const CHUNK_OVERLAP = 200;
 const RETRIEVER_K = 3;
 // const DOCUMENT_DIR = 'src/documents';
 

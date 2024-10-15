@@ -2,7 +2,7 @@ import express from 'express';
 import { config } from "dotenv";
 import generate_mcq from './routes/generate-mcq';
 import cors from 'cors';
-import { chatWithDocsLocally } from './usecases/chatWithDocsLocally';
+import { chatWithDocsLocally } from './usecases/chatWithLocalDocuments';
 
 config();
 
