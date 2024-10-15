@@ -1,11 +1,11 @@
-import { ChatGPT } from "../lib/llm";
+import { ChatGPT, ollama } from "../lib/llm";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { DocxLoader } from "@langchain/community/document_loaders/fs/docx";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { OpenAIEmbeddings } from "@langchain/openai";
-import { MemoryVectorStore } from "langchain/vectorstores/memory";
+import { Chroma } from '@langchain/community/vectorstores/chroma';
 import { createRetrievalChain } from 'langchain/chains/retrieval';
 import { Document } from "@langchain/core/documents";
 
@@ -15,6 +15,7 @@ import "mammoth";
 const CHUNK_SIZE = 300;
 const CHUNK_OVERLAP = 30;
 const RETRIEVER_K = 3;
+// const DOCUMENT_DIR = 'src/documents';
 
 const prompt = ChatPromptTemplate.fromTemplate(`
     Answer the question based on the context below.
@@ -24,11 +25,14 @@ const prompt = ChatPromptTemplate.fromTemplate(`
 
 const createVectorStore = async (docs: Document[]) => {
   const embeddings = new OpenAIEmbeddings();
-  return MemoryVectorStore.fromDocuments(docs, embeddings);
+  return Chroma.fromDocuments(docs, embeddings, {
+    collectionName: 'docs',
+    url: 'http://0.0.0.0:8000',
+  })
 };
 
 const createRetrievalChainFromDocs = async (docs: Document[]) => {
-  const baseChain = prompt.pipe(ChatGPT).pipe(new StringOutputParser());
+  const baseChain = prompt.pipe(ollama).pipe(new StringOutputParser());
   const vectorStore = await createVectorStore(docs);
   const retriever = vectorStore.asRetriever({ k: RETRIEVER_K });
   return createRetrievalChain({
@@ -61,7 +65,7 @@ const loadAndProcessDocument = async (fileType: string, path: string) => {
 export const chatWithDocsLocally = async (
   question: string,
   fileType: string = 'pdf',
-  path: string = 'src/utils/js.pdf'
+  path: string = 'src/documents/js.pdf'
 ): Promise<string> => {
   try {
     const docs = await loadAndProcessDocument(fileType, path);
