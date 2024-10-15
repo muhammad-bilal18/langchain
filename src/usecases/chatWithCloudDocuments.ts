@@ -12,8 +12,8 @@ import { Document } from "@langchain/core/documents";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { DocxLoader } from "@langchain/community/document_loaders/fs/docx";
 
-const CHUNK_SIZE = 300;
-const CHUNK_OVERLAP = 30;
+const CHUNK_SIZE = 2000;
+const CHUNK_OVERLAP = 200;
 const RETRIEVER_K = 3;
 const S3_BUCKET = process.env.AWS_BUCKET ?? '';
 const S3_REGION = process.env.AWS_REGION ?? '';

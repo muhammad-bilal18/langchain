@@ -1,10 +1,8 @@
 import express from 'express';
 import { config } from "dotenv";
 import generate_mcq from './routes/generate-mcq';
-// import upload_document from './routes/upload-document';
 import cors from 'cors';
-import { connectToDatabase } from './lib/db';
-import { chatWithCloudDocuments } from './usecases/chatWithCloudDocuments';
+import { chatWithDocsLocally } from './usecases/chatWithLocalDocuments';
 
 config();
 
@@ -13,21 +11,18 @@ app.use(express.json())
 app.use(cors());
 const PORT = process.env.PORT;
 
-app.listen(PORT, () => {
-  console.log('server listening on port', PORT);
-  // connectToDatabase();
-})
-
 app.get('/health', (_req, res) => {
   res.status(200).send('ok');
 })
 
 app.use('/generate-mcq', generate_mcq);
 
-// app.use('/upload-document', upload_document);
-// async function main() {
-//   const response = await chatWithCloudDocuments("Who is Bilal?");
-//   console.log(response);
-// }
+async function main() {
+  const response = await chatWithDocsLocally('Give a small introduction of Muhammad Bilal?', 'docx', 'src/documents/intro.docx');
+  console.log(response);
+}
 
-// main();
+app.listen(PORT, async () => {
+  console.log('server listening on port', PORT);
+  await main();
+})
