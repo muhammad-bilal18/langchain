@@ -9,7 +9,7 @@ export const ChatGPT = new ChatOpenAI({
   temperature: 0.9
 });
 
-export const ollama = new Ollama({
+export const llama = new Ollama({
   model: "llama3.2",
   temperature: 1,
 });
