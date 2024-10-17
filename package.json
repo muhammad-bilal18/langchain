@@ -18,6 +18,8 @@
     "@langchain/core": "^0.3.9",
     "@langchain/ollama": "^0.1.0",
     "@langchain/openai": "^0.3.5",
+    "@langchain/pinecone": "^0.1.1",
+    "@pinecone-database/pinecone": "^3.0.3",
     "aws-sdk": "^2.1691.0",
     "cheerio": "^1.0.0",
     "chromadb": "^1.9.2",
