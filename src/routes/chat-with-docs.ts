@@ -12,18 +12,10 @@ router.post('/', async (req: Request, res: Response) => {
             return;
         }
         // const doc = 'cloud'
-        if (true) {
+        if (false) {
             const stream = await chatWithDocsLocally(question, 'docx', 'src/documents/my-qa.docx');            
             const [logStream, responseStream] = stream.tee();
             const logReader = logStream.getReader();
-            console.log('\n');
-            while (true) {
-                const { done, value } = await logReader.read();
-                if (done) {
-                    break;
-                }
-                if (value.answer) process.stdout.write(value.answer);
-            }
             res
                 .header('Content-Type', 'text/event-stream')
                 .header('Cache-Control', 'no-cache')
@@ -46,14 +38,6 @@ router.post('/', async (req: Request, res: Response) => {
             const stream = await chatWithCloudDocuments(question, 'my-qa.docx'); // can initiate chat with any cloud document
             const [logStream, responseStream] = stream.tee();
             const logReader = logStream.getReader();
-            console.log('\n');
-            while (true) {
-                const { done, value } = await logReader.read();
-                if (done) {
-                    break;
-                }
-                if (value.answer) process.stdout.write(value.answer);
-            }
             res
                 .header('Content-Type', 'text/event-stream')
                 .header('Cache-Control', 'no-cache')
