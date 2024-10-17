@@ -5,9 +5,9 @@ import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { DocxLoader } from "@langchain/community/document_loaders/fs/docx";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { OpenAIEmbeddings } from "@langchain/openai";
-import { PineconeStore } from "@langchain/pinecone";
 import { createRetrievalChain } from 'langchain/chains/retrieval';
 import { Document } from "@langchain/core/documents";
+import { PineconeStore } from "@langchain/pinecone";
 import { Pinecone } from "@pinecone-database/pinecone";
 
 import "pdf-parse";
