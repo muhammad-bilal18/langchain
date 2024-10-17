@@ -6,7 +6,7 @@ const router = Router();
 
 router.post('/', async (req: Request, res: Response) => {
     try {
-        const { _id, question } = req.body;
+        const { question } = req.body;
         if (!question) {
             res.status(400).send({ message: 'Question is required!' });
             return;
