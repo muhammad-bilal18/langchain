@@ -17,7 +17,7 @@ const CHUNK_SIZE = 2000;
 const CHUNK_OVERLAP = 200;
 const RETRIEVER_K = 3;
 const S3_BUCKET = process.env.AWS_BUCKET ?? '';
-const S3_REGION = process.env.AWS_REGION ?? '';
+const S3_REGION = process.env.REGION ?? '';
 const pineconeIndexName = process.env.PINECONE_INDEX_NAME!;
 
 const PROMPT_TEMPLATE = `
