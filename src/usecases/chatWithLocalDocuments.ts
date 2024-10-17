@@ -5,35 +5,49 @@ import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { DocxLoader } from "@langchain/community/document_loaders/fs/docx";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { OpenAIEmbeddings } from "@langchain/openai";
-import { Chroma } from '@langchain/community/vectorstores/chroma';
 import { createRetrievalChain } from 'langchain/chains/retrieval';
 import { Document } from "@langchain/core/documents";
+import { PineconeStore } from "@langchain/pinecone";
+import { Pinecone } from "@pinecone-database/pinecone";
 
 import "pdf-parse";
 import "mammoth";
+import { response } from "express";
 
-const CHUNK_SIZE = 2000;
-const CHUNK_OVERLAP = 200;
-const RETRIEVER_K = 3;
-// const DOCUMENT_DIR = 'src/documents';
+const CHUNK_SIZE = 1000; // Reduced from 2000
+const CHUNK_OVERLAP = 100; // Reduced from 200
+const RETRIEVER_K = 2; // Reduced from 3
+
+const pineconeIndexName = process.env.PINECONE_INDEX_NAME!;
 
 const prompt = ChatPromptTemplate.fromTemplate(`
-    Answer the question based on the context below.
+    Answer the question based on the context below. Be concise.
     Context: {context}
     Question: {input}
 `);
 
-const createVectorStore = async (docs: Document[]) => {
-  const embeddings = new OpenAIEmbeddings();
-  return Chroma.fromDocuments(docs, embeddings, {
-    collectionName: 'docs',
-    url: 'http://0.0.0.0:8000',
-  })
+const pinecone = new Pinecone({
+  apiKey: process.env.PINECONE_API_KEY!,
+});
+
+const embeddings = new OpenAIEmbeddings();
+
+let vectorStore: PineconeStore | null = null;
+
+const getVectorStore = async (docs: Document[]) => {
+  if (!vectorStore) {
+    const index = pinecone.Index(pineconeIndexName);
+    vectorStore = await PineconeStore.fromDocuments(docs, embeddings, {
+      pineconeIndex: index,
+      namespace: 'default',
+    });
+  }
+  return vectorStore;
 };
 
 const createRetrievalChainFromDocs = async (docs: Document[]) => {
   const baseChain = prompt.pipe(llama).pipe(new StringOutputParser());
-  const vectorStore = await createVectorStore(docs);
+  const vectorStore = await getVectorStore(docs);
   const retriever = vectorStore.asRetriever({ k: RETRIEVER_K });
   return createRetrievalChain({
     combineDocsChain: baseChain,
@@ -66,12 +80,12 @@ export const chatWithDocsLocally = async (
   question: string,
   fileType: string = 'pdf',
   path: string = 'src/documents/js.pdf'
-): Promise<string> => {
+): Promise<ReadableStream> => {
   try {
     const docs = await loadAndProcessDocument(fileType, path);
     const retrievalChain = await createRetrievalChainFromDocs(docs);
-    const response = await retrievalChain.invoke({ input: question });
-    return response.answer;
+    const stream = await retrievalChain.stream({ input: question });
+    return stream;
   } catch (error) {
     console.error("Error in chatWithDocsLocally:", error);
     throw new Error("Failed to process the document or answer the question");

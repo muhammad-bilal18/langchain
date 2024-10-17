@@ -6,7 +6,8 @@ import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { OpenAIEmbeddings } from "@langchain/openai";
-import { MemoryVectorStore } from "langchain/vectorstores/memory";
+import { PineconeStore } from "@langchain/pinecone";
+import { Pinecone } from "@pinecone-database/pinecone";
 import { createRetrievalChain } from "langchain/chains/retrieval";
 import { Document } from "@langchain/core/documents";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
@@ -17,12 +18,17 @@ const CHUNK_OVERLAP = 200;
 const RETRIEVER_K = 3;
 const S3_BUCKET = process.env.AWS_BUCKET ?? '';
 const S3_REGION = process.env.AWS_REGION ?? '';
+const pineconeIndexName = process.env.PINECONE_INDEX_NAME!;
 
 const PROMPT_TEMPLATE = `
   Answer the question based on the context below.
   Context: {context}
   Question: {input}
 `;
+
+const pinecone = new Pinecone({
+  apiKey: process.env.PINECONE_API_KEY!,
+});
 
 const s3Client = new S3Client({
   region: S3_REGION,
@@ -32,9 +38,18 @@ const s3Client = new S3Client({
   },
 });
 
-const createVectorStore = async (docs: Document[]): Promise<MemoryVectorStore> => {
-  const embeddings = new OpenAIEmbeddings();
-  return MemoryVectorStore.fromDocuments(docs, embeddings);
+let vectorStore: PineconeStore | null = null;
+
+const createVectorStore = async (docs: Document[]) => {
+  if (!vectorStore) {
+    const embeddings = new OpenAIEmbeddings();
+    const index = pinecone.Index(pineconeIndexName);
+    vectorStore = await PineconeStore.fromDocuments(docs, embeddings, {
+      pineconeIndex: index,
+      namespace: 'default',
+    });
+  }
+  return vectorStore;
 };
 
 const createRetrievalChainFromDocs = async (docs: Document[]) => {
@@ -72,13 +87,13 @@ const processDocument = async (buffer: Uint8Array): Promise<Document[]> => {
   return textSplitter.splitDocuments(docs);
 };
 
-export const chatWithCloudDocuments = async (question: string): Promise<string> => {
+export const chatWithCloudDocuments = async (question: string, name: string): Promise<ReadableStream> => {
   try {
-    const buffer = await loadDocumentFromS3('intro.docx');
+    const buffer = await loadDocumentFromS3(name);
     const docs = await processDocument(buffer);
     const retrievalChain = await createRetrievalChainFromDocs(docs);
-    const response = await retrievalChain.invoke({ input: question });
-    return response.answer;
+    const response = await retrievalChain.stream({ input: question });
+    return response;
   } catch (error) {
     console.error("Error in chatWithCloudDocuments:", error);
     throw new Error("Failed to process the document or answer the question");
