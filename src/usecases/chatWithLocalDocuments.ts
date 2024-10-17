@@ -1,4 +1,4 @@
-import { ChatGPT, ollama } from "../lib/llm";
+import { llama } from "../lib/llm";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
@@ -32,7 +32,7 @@ const createVectorStore = async (docs: Document[]) => {
 };
 
 const createRetrievalChainFromDocs = async (docs: Document[]) => {
-  const baseChain = prompt.pipe(ollama).pipe(new StringOutputParser());
+  const baseChain = prompt.pipe(llama).pipe(new StringOutputParser());
   const vectorStore = await createVectorStore(docs);
   const retriever = vectorStore.asRetriever({ k: RETRIEVER_K });
   return createRetrievalChain({
