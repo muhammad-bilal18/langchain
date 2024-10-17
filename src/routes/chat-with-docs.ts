@@ -12,7 +12,7 @@ router.post('/', async (req: Request, res: Response) => {
             return;
         }
         // const doc = 'cloud'
-        if (false) {
+        if (true) {
             const stream = await chatWithDocsLocally(question, 'docx', 'src/documents/my-qa.docx');            
             const [logStream, responseStream] = stream.tee();
             const logReader = logStream.getReader();

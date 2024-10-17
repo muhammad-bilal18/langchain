@@ -6,7 +6,8 @@
   "type": "commonjs",
   "scripts": {
     "start": "node dist/app.js",
-    "dev": "nodemon src/app.ts"
+    "dev": "nodemon src/app.ts",
+    "build": "tsc -p ."
   },
   "keywords": [],
   "author": "Muhammad Bilal",
