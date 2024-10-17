@@ -38,12 +38,12 @@ export const generateQuery = async (expression: string): Promise<string> => {
     if (collection !== 'patients' && collection !== 'appointments') {
         return 'undefined';
     }
+    const queryChain = createQueryChain(collection);
+    const response = await queryChain.invoke({ expression: expression });
     try {
-      const queryChain = createQueryChain(collection);
-      const response = await queryChain.invoke({ expression: expression });
       const queryResponse = await eval(response);
       return queryResponse;
     } catch (error) {
-      return 'undefined';
+      return response;
     }
 };
