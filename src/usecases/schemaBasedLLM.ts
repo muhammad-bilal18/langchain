@@ -5,16 +5,15 @@ import { StringOutputParser } from '@langchain/core/output_parsers';
 import { connectToDatabase } from '../lib/db';
 
 const collectionPrompt = ChatPromptTemplate.fromTemplate(`
-  Based on the given expression, return the name of the collection. 
-  The collection must be either "patients" or "appointments" (in plural form).
-  
+  Based on the given expression, return either "patients" or "appointments" as the collection name. 
+
   Collection "patients" has fields: petName, petType, ownerName, ownerAddress, ownerPhone.
   Collection "appointments" has fields: patient.petName, patient.ownerPhoneNumber, appointmentStartTime, appointmentEndTime, description, feeAmount, feeStatus.
-  
-  Note: Always return either "patients" or "appointments" as the collection name, and ensure the name is plural.
+
+  Only return the exact word: "patients" or "appointments".
   
   expression: {expression}
-`)
+`);
 
 const collectionChain = collectionPrompt.pipe(ChatGPT).pipe(new StringOutputParser());
 
@@ -35,6 +34,7 @@ export const generateQuery = async (expression: string): Promise<string> => {
         throw new Error("Database instance is undefined");
     }
     const collection = await collectionChain.invoke({ expression: expression });
+    console.log('collection', collection);
     if (collection !== 'patients' && collection !== 'appointments') {
         return 'undefined';
     }
