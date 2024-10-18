@@ -5,8 +5,8 @@ const router = Router();
 
 router.post('/', async (req: Request, res: Response) => {
     try {
-        const { question, sessionId } = req.body;
-        if (!question || !sessionId) {
+        const { question } = req.body;
+        if (!question) {
             res.status(400).send({ message: 'Question and sessionId are required!' });
             return;
         }
@@ -24,7 +24,7 @@ router.post('/', async (req: Request, res: Response) => {
             }
         }
 
-        res.status(200).send({ stream: logStream, plaintext: answer, sessionId });
+        res.status(200).send({ stream: logStream, plaintext: answer });
 
     } catch (error) {
         console.error('Error in chat with documents:', error);
