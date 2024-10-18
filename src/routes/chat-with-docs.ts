@@ -39,10 +39,6 @@ router.post('/', async (req: Request, res: Response) => {
             const [logStream, responseStream] = stream.tee();
             const logReader = logStream.getReader();
             let answer = '';
-            res
-                .header('Content-Type', 'text/event-stream')
-                .header('Cache-Control', 'no-cache')
-                .header('Connection', 'keep-alive')
             while (true) {
                 const { done, value } = await logReader.read();
                 if (done) break;
@@ -51,7 +47,7 @@ router.post('/', async (req: Request, res: Response) => {
                     answer += value.answer;
                 }
             }
-            res.send({ stream: responseStream, plaintext: answer });
+            res.send({ stream: logStream, plaintext: answer });
             return;
 
         }
