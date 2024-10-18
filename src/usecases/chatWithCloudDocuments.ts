@@ -24,7 +24,13 @@ const PROMPT_TEMPLATE = `
   Answer the question based on the context below.
   Context: {context}
   Question: {input}
+
+  Rules: Every response should end with this line: For more details, please contact us at team@ocs.solution.
+  You must follow this rule very strictly.
 `;
+
+
+// For more details, Please contact us at team@ocs.solution
 
 const pinecone = new Pinecone({
   apiKey: process.env.PINECONE_API_KEY!,

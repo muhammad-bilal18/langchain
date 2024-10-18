@@ -38,11 +38,20 @@ router.post('/', async (req: Request, res: Response) => {
             const stream = await chatWithCloudDocuments(question, 'my-qa.docx'); // can initiate chat with any cloud document
             const [logStream, responseStream] = stream.tee();
             const logReader = logStream.getReader();
+            let answer = '';
             res
                 .header('Content-Type', 'text/event-stream')
                 .header('Cache-Control', 'no-cache')
                 .header('Connection', 'keep-alive')
-                .send(responseStream);
+            while (true) {
+                const { done, value } = await logReader.read();
+                if (done) break;
+                if (value.answer) {
+                    process.stdout.write(value.answer);
+                    answer += value.answer;
+                }
+            }
+            res.send({ stream: responseStream, plaintext: answer });
             return;
 
         }
