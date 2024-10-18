@@ -1,4 +1,4 @@
-import { llama } from "../lib/llm";
+import { ChatGPT } from "../lib/llm";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
@@ -14,9 +14,9 @@ import "pdf-parse";
 import "mammoth";
 import { response } from "express";
 
-const CHUNK_SIZE = 1000; // Reduced from 2000
-const CHUNK_OVERLAP = 100; // Reduced from 200
-const RETRIEVER_K = 2; // Reduced from 3
+const CHUNK_SIZE = 2000;
+const CHUNK_OVERLAP = 200;
+const RETRIEVER_K = 2;
 
 const pineconeIndexName = process.env.PINECONE_INDEX_NAME!;
 
@@ -46,7 +46,7 @@ const getVectorStore = async (docs: Document[]) => {
 };
 
 const createRetrievalChainFromDocs = async (docs: Document[]) => {
-  const baseChain = prompt.pipe(llama).pipe(new StringOutputParser());
+  const baseChain = prompt.pipe(ChatGPT).pipe(new StringOutputParser());
   const vectorStore = await getVectorStore(docs);
   const retriever = vectorStore.asRetriever({ k: RETRIEVER_K });
   return createRetrievalChain({
